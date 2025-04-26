@@ -1,0 +1,11 @@
+// Example: mobile/app/(tabs)/budget.tsx
+import React from 'react';
+import { View, Text } from 'react-native';
+
+export default function BudgetScreen() {
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>Accounts Screen</Text>
+    </View>
+  );
+}

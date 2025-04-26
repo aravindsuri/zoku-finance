@@ -7,6 +7,8 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { Ionicons, MaterialIcons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import CustomDrawerContent from '../CustomDrawerContent';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -26,18 +28,40 @@ export default function TabLayout() {
           default: {},
         }),
       }}>
-      <Tabs.Screen
+            <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="budget"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Budget',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="track-changes" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="transactions"
+        options={{
+          title: 'Transactions',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="swap-vertical" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="accounts"
+        options={{
+          title: 'Accounts',
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="credit-card" size={size} color={color} />
+          ),
         }}
       />
     </Tabs>
