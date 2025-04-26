@@ -1,3 +1,8 @@
+export const unstable_settings = {
+  // This will hide the screen from the tab bar
+  href: null,
+};
+
 import { StyleSheet, Image, Platform } from 'react-native';
 
 import { Collapsible } from '@/components/Collapsible';
