@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, ActivityIndicator, Modal, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import api from '../services/api'; // Adjust path as needed
 
 type Account = {
@@ -43,11 +43,22 @@ const getAccountIcon = (type: string) => {
 const AccountsScreen = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [showAddAccountModal, setShowAddAccountModal] = useState(false);
+  const [showConnectBankModal, setShowConnectBankModal] = useState(false);
+  const [selectedBankId, setSelectedBankId] = useState<string | null>(null);
   const router = useRouter();
+  const params = useLocalSearchParams();
 
   useEffect(() => {
     fetchAccounts();
   }, []);
+
+  // Check if we should show the add account modal when the screen loads
+  useEffect(() => {
+    if (params.showAddAccount === 'true') {
+      setShowAddAccountModal(true);
+    }
+  }, [params]);
 
   const fetchAccounts = async () => {
     try {
@@ -71,7 +82,26 @@ const AccountsScreen = () => {
   };
 
   const navigateToAddAccount = () => {
-    router.push('/(drawer)/modal/add-account');
+    setShowAddAccountModal(true);
+  };
+
+  const closeAddAccountModal = () => {
+    setShowAddAccountModal(false);
+  };
+
+  const handleSelectBank = (bankId: string) => {
+    setSelectedBankId(bankId);
+    setShowAddAccountModal(false);
+    setShowConnectBankModal(true);
+  };
+
+  const closeConnectBankModal = () => {
+    setShowConnectBankModal(false);
+  };
+
+  const goBackToBankSelection = () => {
+    setShowConnectBankModal(false);
+    setShowAddAccountModal(true);
   };
 
   const renderAccountItem = ({ item }: { item: Account }) => (
@@ -94,6 +124,35 @@ const AccountsScreen = () => {
       </View>
     </View>
   );
+
+  // Define the bank options here for the modal
+  const banks = [
+    {
+      id: 'deutschebank',
+      name: 'Deutsche Bank',
+      icon: 'business-outline',
+      description: 'Connect your Deutsche Bank accounts via secure API'
+    },
+    {
+      id: 'ing',
+      name: 'ING Bank',
+      icon: 'business-outline',
+      description: 'Connect your ING direct banking accounts'
+    },
+    {
+      id: 'paypal',
+      name: 'PayPal',
+      icon: 'logo-paypal',
+      description: 'Connect your PayPal account to track transactions'
+    }
+  ];
+
+  // Get bank name from ID
+  const getBankName = (bankId: string | null) => {
+    if (!bankId) return '';
+    const bank = banks.find(b => b.id === bankId);
+    return bank ? bank.name : bankId;
+  };
 
   return (
     <View style={styles.container}>
@@ -143,6 +202,105 @@ const AccountsScreen = () => {
         <Ionicons name="add-circle-outline" size={20} color="white" style={styles.buttonIcon} />
         <Text style={styles.addAccountButtonText}>Connect New Account</Text>
       </TouchableOpacity>
+
+      {/* Add Account Modal */}
+      <Modal
+        visible={showAddAccountModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={closeAddAccountModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add Financial Account</Text>
+              <TouchableOpacity onPress={closeAddAccountModal} style={styles.closeButton}>
+                <Ionicons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+            
+            <Text style={styles.modalSubtitle}>
+              Select your bank or financial service to connect
+            </Text>
+
+            <ScrollView style={styles.banksList}>
+              {banks.map((bank) => (
+                <TouchableOpacity
+                  key={bank.id}
+                  style={styles.bankCard}
+                  onPress={() => handleSelectBank(bank.id)}
+                >
+                  <View style={styles.bankIconContainer}>
+                    <Ionicons 
+                      name={bank.icon as any} 
+                      size={28} 
+                      color={bank.id === 'paypal' ? '#003087' : '#0052CC'} 
+                    />
+                  </View>
+                  <View style={styles.bankInfo}>
+                    <Text style={styles.bankName}>{bank.name}</Text>
+                    <Text style={styles.bankDescription}>{bank.description}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#A0A8B0" />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <View style={styles.securityNote}>
+              <Ionicons name="shield-checkmark-outline" size={16} color="#72787F" style={{marginRight: 6}} />
+              <Text style={styles.securityText}>
+                Your credentials are securely transmitted. We never store your banking passwords.
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Connect Bank Modal */}
+      <Modal
+        visible={showConnectBankModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={closeConnectBankModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity onPress={goBackToBankSelection} style={styles.backButton}>
+                <Ionicons name="arrow-back" size={24} color="#000" />
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Connect {getBankName(selectedBankId)}</Text>
+              <View style={{ width: 24 }} />
+            </View>
+            
+            <View style={styles.connectBankContainer}>
+              <Text style={styles.connectText}>You selected: {selectedBankId}</Text>
+              
+              {/* Add your bank connection UI here */}
+              <View style={styles.formContainer}>
+                {/* This is just placeholder UI for the bank connection form */}
+                <View style={styles.inputField}>
+                  <Text style={styles.inputLabel}>Username</Text>
+                  <View style={styles.input}>
+                    <Text style={styles.inputPlaceholder}>Enter your bank username</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.inputField}>
+                  <Text style={styles.inputLabel}>Password</Text>
+                  <View style={styles.input}>
+                    <Text style={styles.inputPlaceholder}>Enter your bank password</Text>
+                  </View>
+                </View>
+                
+                <TouchableOpacity style={styles.connectButton}>
+                  <Text style={styles.connectButtonText}>Connect Account</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -299,6 +457,123 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#F5F7FA',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 16,
+    height: '90%', // Take up most of the screen
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  backButton: {
+    padding: 4,
+  },
+  modalSubtitle: {
+    fontSize: 16, 
+    color: '#72787F',
+    marginBottom: 24,
+  },
+  banksList: {
+    flex: 1,
+  },
+  bankCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  bankIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F0F4F8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  bankInfo: {
+    flex: 1,
+  },
+  bankName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  bankDescription: {
+    fontSize: 14,
+    color: '#72787F',
+  },
+  securityNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    paddingVertical: 16,
+  },
+  securityText: {
+    fontSize: 12,
+    color: '#72787F',
+    textAlign: 'center',
+    flex: 1,
+  },
+  connectBankContainer: {
+    flex: 1,
+    paddingTop: 24,
+  },
+  connectText: {
+    fontSize: 16,
+    color: '#72787F',
+    marginBottom: 24,
+  },
+  formContainer: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+  },
+  inputField: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#E1E5EA',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+  },
+  inputPlaceholder: {
+    color: '#A0A8B0',
   },
 });
 

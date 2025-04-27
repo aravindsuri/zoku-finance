@@ -25,25 +25,26 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
           <Text style={styles.userEmail}>aravind.suri@example.com</Text>
         </View>
       </View>
-      <View style={{ flex: 1 }}>
+      
+      <View>
         <DrawerItem
           label="Dashboard"
           icon={({ color, size }) => <Feather name="home" size={size} color={color} />}
-          onPress={() => props.navigation.navigate('index')}
+          onPress={() => props.navigation.navigate('(tabs)', { screen: 'index' })}
           focused={props.state.index === 0}
           labelStyle={styles.drawerLabel}
         />
         <DrawerItem
           label="Budget"
           icon={({ color, size }) => <MaterialIcons name="track-changes" size={size} color={color} />}
-          onPress={() => props.navigation.navigate('budget')}
+          onPress={() => props.navigation.navigate('(tabs)', { screen: 'budget' })}
           focused={props.state.index === 1}
           labelStyle={styles.drawerLabel}
         />
         <DrawerItem
           label="Transactions"
           icon={({ color, size }) => <Feather name="arrow-up-right" size={size} color={color} />}
-          onPress={() => props.navigation.navigate('transactions')}
+          onPress={() => props.navigation.navigate('(tabs)', { screen: 'transactions' })}
           focused={props.state.index === 2}
           labelStyle={styles.drawerLabel}
         />
@@ -56,7 +57,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
         <DrawerItem
           label="Accounts"
           icon={({ color, size }) => <Feather name="credit-card" size={size} color={color} />}
-          onPress={() => props.navigation.navigate('accounts')}
+          onPress={() => props.navigation.navigate('(tabs)', { screen: 'accounts' })}
           focused={props.state.index === 3}
           labelStyle={styles.drawerLabel}
         />
@@ -67,7 +68,16 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
           labelStyle={styles.drawerLabel}
         />
       </View>
-      <TouchableOpacity style={styles.addButton}>
+      <TouchableOpacity 
+        style={styles.addButton}
+        onPress={() => {
+          props.navigation.navigate('(tabs)', { 
+            screen: 'accounts',
+            params: { showAddAccount: 'true' }
+          });
+          props.navigation.closeDrawer();
+        }}
+      >
         <Text style={styles.addButtonText}>+ Add New Account</Text>
       </TouchableOpacity>
     </DrawerContentScrollView>
