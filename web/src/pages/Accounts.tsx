@@ -5,30 +5,69 @@ import ConnectBankModal from '../components/ConnectBankModal';
 
 const getAccountTypeName = (type: AccountType): string => {
   switch (type) {
-    case 'deutschebank': return 'Deutsche Bank';
-    case 'ing': return 'ING Bank';
+    case 'chase': return 'Chase';
+    case 'bankofamerica': return 'Bank of America';
+    case 'wellsfargo': return 'Wells Fargo';
     case 'paypal': return 'PayPal';
+    case 'venmo': return 'Venmo';
     default: return type;
   }
 };
 
 const getInstitutionName = (type: AccountType): string => {
   switch (type) {
-    case 'deutschebank': return 'Deutsche Bank AG';
-    case 'ing': return 'ING Bank N.V.';
+    case 'chase': return 'JPMorgan Chase Bank, N.A.';
+    case 'bankofamerica': return 'Bank of America, N.A.';
+    case 'wellsfargo': return 'Wells Fargo Bank, N.A.';
     case 'paypal': return 'PayPal, Inc.';
+    case 'venmo': return 'Venmo, Inc.';
     default: return '';
   }
 };
 
 const getAccountIcon = (type: AccountType): string => {
   switch (type) {
-    case 'deutschebank': return '🏦';
-    case 'ing': return '🏦';
+    case 'chase': return '🏦';
+    case 'bankofamerica': return '🏦';
+    case 'wellsfargo': return '🏦';
     case 'paypal': return '💳';
+    case 'venmo': return '💸';
     default: return '💳';
   }
 };
+
+const banks: Bank[] = [
+  {
+    id: 'chase',
+    name: 'Chase',
+    icon: '🏦',
+    description: 'Connect your Chase bank accounts securely',
+  },
+  {
+    id: 'bankofamerica',
+    name: 'Bank of America',
+    icon: '🏦',
+    description: 'Connect your Bank of America accounts',
+  },
+  {
+    id: 'wellsfargo',
+    name: 'Wells Fargo',
+    icon: '🏦',
+    description: 'Connect your Wells Fargo accounts',
+  },
+  {
+    id: 'paypal',
+    name: 'PayPal',
+    icon: '💳',
+    description: 'Connect your PayPal account',
+  },
+  {
+    id: 'venmo',
+    name: 'Venmo',
+    icon: '💸',
+    description: 'Connect your Venmo account',
+  },
+];
 
 const AccountsPage: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -56,10 +95,10 @@ const AccountsPage: React.FC = () => {
         },
         {
           id: '2',
-          type: 'deutschebank',
+          type: 'chase',
           name: 'Main Checking',
           balance: 3245.67,
-          institution: getInstitutionName('deutschebank'),
+          institution: getInstitutionName('chase'),
           lastSync: new Date().toISOString()
         }
       ];
@@ -71,16 +110,15 @@ const AccountsPage: React.FC = () => {
     }
   };
 
-  const handleSelectBank = (bankId: AccountType) => {
-    const bank = {
-      id: bankId,
-      name: getAccountTypeName(bankId),
-      icon: getAccountIcon(bankId),
-      description: `Connect your ${getAccountTypeName(bankId)} account`
-    };
+  const handleSelectBank = (bank: Bank) => {
     setSelectedBank(bank);
     setShowAddAccountModal(false);
     setShowConnectBankModal(true);
+  };
+
+  const handleBackToBankSelection = () => {
+    setShowConnectBankModal(false);
+    setShowAddAccountModal(true);
   };
 
   const totalBalance = accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
@@ -154,22 +192,17 @@ const AccountsPage: React.FC = () => {
         <AccountModal
           isOpen={showAddAccountModal}
           onClose={() => setShowAddAccountModal(false)}
-          onSave={(account) => {
-            // Handle saving the account
-            console.log('Saving account:', account);
-            setShowAddAccountModal(false);
-          }}
+          onSelectBank={handleSelectBank}
         />
 
-        <ConnectBankModal
-          isOpen={showConnectBankModal}
-          onClose={() => setShowConnectBankModal(false)}
-          onSelectBank={(bankId) => {
-            // Handle bank selection
-            console.log('Selected bank:', bankId);
-            setShowConnectBankModal(false);
-          }}
-        />
+        {selectedBank && (
+          <ConnectBankModal
+            isOpen={showConnectBankModal}
+            onClose={() => setShowConnectBankModal(false)}
+            onBack={handleBackToBankSelection}
+            selectedBank={selectedBank}
+          />
+        )}
       </div>
     </div>
   );

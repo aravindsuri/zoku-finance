@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface Bank {
   id: string;
@@ -10,7 +10,8 @@ interface Bank {
 interface ConnectBankModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectBank: (bankId: string) => void;
+  onBack: () => void;
+  selectedBank: Bank;
 }
 
 const banks: Bank[] = [
@@ -49,50 +50,140 @@ const banks: Bank[] = [
 const ConnectBankModal: React.FC<ConnectBankModalProps> = ({
   isOpen,
   onClose,
-  onSelectBank,
+  onBack,
+  selectedBank,
 }) => {
+  const [step, setStep] = useState<'credentials' | 'security'>('credentials');
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    securityCode: '',
+  });
+
   if (!isOpen) return null;
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (step === 'credentials') {
+      // In a real app, validate credentials here
+      setStep('security');
+    } else {
+      // In a real app, handle bank connection here
+      console.log('Connecting to bank...', { bank: selectedBank, formData });
+      onClose();
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Connect Bank Account</h2>
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex items-center mb-6">
           <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            onClick={onBack}
+            className="text-gray-500 hover:text-gray-700 mr-4"
           >
-            ✕
+            ←
           </button>
+          <h2 className="text-xl font-semibold">Connect {selectedBank.name}</h2>
         </div>
 
-        <p className="text-gray-600 mb-6">
-          Select your bank or financial service to connect
-        </p>
+        <div className="mb-6">
+          <div className="flex items-center space-x-4 mb-4">
+            <span className="text-2xl">{selectedBank.icon}</span>
+            <div>
+              <h3 className="font-medium">{selectedBank.name}</h3>
+              <p className="text-sm text-gray-500">{selectedBank.description}</p>
+            </div>
+          </div>
+          <div className="h-2 bg-gray-200 rounded-full">
+            <div
+              className="h-full bg-blue-600 rounded-full"
+              style={{ width: step === 'credentials' ? '50%' : '100%' }}
+            />
+          </div>
+        </div>
 
-        <div className="space-y-4">
-          {banks.map((bank) => (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {step === 'credentials' ? (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+            </>
+          ) : (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Security Code
+              </label>
+              <input
+                type="text"
+                name="securityCode"
+                value={formData.securityCode}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+              />
+              <p className="mt-2 text-sm text-gray-500">
+                Enter the security code sent to your registered email/phone
+              </p>
+            </div>
+          )}
+
+          <div className="flex justify-end space-x-4 mt-6">
             <button
-              key={bank.id}
-              onClick={() => onSelectBank(bank.id)}
-              className="w-full p-4 bg-white rounded-xl border border-gray-200 hover:border-blue-500 transition-colors flex items-center space-x-4"
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
             >
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-2xl">
-                {bank.icon}
-              </div>
-              <div className="flex-1 text-left">
-                <h3 className="font-semibold">{bank.name}</h3>
-                <p className="text-sm text-gray-600">{bank.description}</p>
-              </div>
-              <div className="text-gray-400">›</div>
+              Cancel
             </button>
-          ))}
-        </div>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              {step === 'credentials' ? 'Continue' : 'Connect Bank'}
+            </button>
+          </div>
+        </form>
 
-        <div className="mt-6 flex items-center justify-center text-sm text-gray-600">
-          <span className="mr-2">🔒</span>
+        <div className="mt-6 text-sm text-gray-500">
           <p>
-            Your credentials are securely transmitted. We never store your banking passwords.
+            By connecting your bank, you agree to our{' '}
+            <a href="#" className="text-blue-600 hover:underline">
+              Terms of Service
+            </a>{' '}
+            and{' '}
+            <a href="#" className="text-blue-600 hover:underline">
+              Privacy Policy
+            </a>
           </p>
         </div>
       </div>

@@ -1,50 +1,53 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Bank } from '../types/accounts';
 
 interface AccountModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (account: {
-    name: string;
-    type: string;
-    balance: number;
-    currency: string;
-  }) => void;
-  initialData?: {
-    name: string;
-    type: string;
-    balance: number;
-    currency: string;
-  };
+  onSelectBank: (bank: Bank) => void;
 }
 
-const AccountModal: React.FC<AccountModalProps> = ({
-  isOpen,
-  onClose,
-  onSave,
-  initialData,
-}) => {
-  const [formData, setFormData] = useState({
-    name: initialData?.name || '',
-    type: initialData?.type || 'checking',
-    balance: initialData?.balance || 0,
-    currency: initialData?.currency || 'USD',
-  });
+const mockBanks: Bank[] = [
+  {
+    id: 'chase',
+    name: 'Chase',
+    icon: '🏦',
+    description: 'Chase Bank - Personal & Business Banking',
+  },
+  {
+    id: 'bankofamerica',
+    name: 'Bank of America',
+    icon: '🏦',
+    description: 'Bank of America - Banking, Credit Cards, and More',
+  },
+  {
+    id: 'wellsfargo',
+    name: 'Wells Fargo',
+    icon: '🏦',
+    description: 'Wells Fargo - Banking, Credit Cards, Loans, and More',
+  },
+  {
+    id: 'paypal',
+    name: 'PayPal',
+    icon: '💳',
+    description: 'PayPal - Send and receive money with ease',
+  },
+  {
+    id: 'venmo',
+    name: 'Venmo',
+    icon: '💸',
+    description: 'Venmo - Share expenses with friends',
+  },
+];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-    onClose();
-  };
-
+const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSelectBank }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">
-            {initialData ? 'Edit Account' : 'Add New Account'}
-          </h2>
+          <h2 className="text-xl font-semibold">Select Your Bank</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -53,82 +56,25 @@ const AccountModal: React.FC<AccountModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Account Name
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Account Type
-            </label>
-            <select
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="checking">Checking</option>
-              <option value="savings">Savings</option>
-              <option value="credit">Credit Card</option>
-              <option value="investment">Investment</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Balance
-            </label>
-            <input
-              type="number"
-              value={formData.balance}
-              onChange={(e) => setFormData({ ...formData, balance: parseFloat(e.target.value) })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              step="0.01"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Currency
-            </label>
-            <select
-              value={formData.currency}
-              onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="GBP">GBP (£)</option>
-              <option value="JPY">JPY (¥)</option>
-            </select>
-          </div>
-
-          <div className="flex justify-end space-x-3 mt-6">
+        <div className="space-y-4">
+          {mockBanks.map((bank) => (
             <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              key={bank.id}
+              onClick={() => onSelectBank(bank)}
+              className="w-full p-4 border rounded-lg hover:bg-gray-50 flex items-center space-x-4"
             >
-              Cancel
+              <span className="text-2xl">{bank.icon}</span>
+              <div className="text-left">
+                <h3 className="font-medium">{bank.name}</h3>
+                <p className="text-sm text-gray-500">{bank.description}</p>
+              </div>
             </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              {initialData ? 'Save Changes' : 'Add Account'}
-            </button>
-          </div>
-        </form>
+          ))}
+        </div>
+
+        <div className="mt-6 text-center text-sm text-gray-500">
+          <p>Don't see your bank? We're adding more banks soon!</p>
+        </div>
       </div>
     </div>
   );
